@@ -12,8 +12,14 @@ public class InputHandler : MonoBehaviour
 	public InputAction _jumpAction;
 	public InputAction _maskAction;
 
+	[Header("Mask Hold Settings")]
+	public float maskHoldTime = 0.75f;
 
-	private void Awake()
+	private bool isHoldingMask;
+	private float maskHoldTimer;
+	private bool maskToggledThisHold;
+
+private void Awake()
 	{
 		playerController = FindFirstObjectByType<PlayerController>();
 
@@ -69,7 +75,11 @@ public class InputHandler : MonoBehaviour
 			_jumpAction.performed += ctx => playerController.Jump();
 
 		if (_maskAction != null && playerMask != null)
-			_maskAction.started += ctx => playerMask.ToggleMask();
+		{
+			_maskAction.started += OnMaskStarted;
+			_maskAction.canceled += OnMaskCanceled;
+		}
+
 
 		Cursor.visible = false;
 	}
@@ -81,6 +91,7 @@ public class InputHandler : MonoBehaviour
 
 		HandleMovement();
 		HandleLook();
+		HandleMaskHold();
 	}
 
 	private void HandleMovement()
@@ -105,4 +116,32 @@ public class InputHandler : MonoBehaviour
 			Debug.LogError($"[InputHandler] InputAction '{actionName}' NOT FOUND in Input Actions asset!");
 		}
 	}
+	private void OnMaskStarted(InputAction.CallbackContext ctx)
+	{
+		isHoldingMask = true;
+		maskHoldTimer = 0f;
+		maskToggledThisHold = false;
+	}
+
+	private void OnMaskCanceled(InputAction.CallbackContext ctx)
+	{
+		isHoldingMask = false;
+		maskHoldTimer = 0f;
+		maskToggledThisHold = false;
+	}
+
+	private void HandleMaskHold()
+	{
+		if (!isHoldingMask || maskToggledThisHold || playerMask == null)
+			return;
+
+		maskHoldTimer += Time.deltaTime;
+
+		if (maskHoldTimer >= maskHoldTime)
+		{
+			playerMask.ToggleMask();
+			maskToggledThisHold = true;
+		}
+	}
+
 }
