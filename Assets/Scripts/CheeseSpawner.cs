@@ -15,6 +15,8 @@ public class CheeseSpawner : MonoBehaviour
 	public int minSmallCheese = 3;
 	public int maxSmallCheese = 6;
 
+	public int MaxSmallCheese { get; private set; }
+
 	private Transform[] bigCheeseSpawnPoints;
 	private Transform[] smallCheeseSpawnPoints;
 
@@ -86,6 +88,8 @@ public class CheeseSpawner : MonoBehaviour
 		int count = Random.Range(minSmallCheese, maxSmallCheese + 1);
 		count = Mathf.Min(count, available.Count);
 
+		MaxSmallCheese = count;
+
 		for (int i = 0; i < count; i++)
 		{
 			int index = Random.Range(0, available.Count);
@@ -95,6 +99,7 @@ public class CheeseSpawner : MonoBehaviour
 			available.RemoveAt(index);
 		}
 	}
+
 
 	// ================= DEBUG =================
 	void OnDrawGizmosSelected()

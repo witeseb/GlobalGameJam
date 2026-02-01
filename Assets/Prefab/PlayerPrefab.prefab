@@ -228,6 +228,7 @@ MonoBehaviour:
     m_Interactions: 
     m_SingletonActionBindings: []
     m_Flags: 0
+  maskHoldTime: 0.75
 --- !u!1 &5893248707530601312
 GameObject:
   m_ObjectHideFlags: 0

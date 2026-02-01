@@ -8,17 +8,11 @@ public class CatPatrol : MonoBehaviour
 	public float waitAtPointTime = 1.5f;
 	public float rotationSpeed = 6f;
 
-	private int currentIndex = -1;
-	private int nextIndex;
+	private int currentIndex;
 	private float waitTimer;
 	private bool isWaiting;
 
 	public bool IsPatrolling { get; private set; } = true;
-
-	void Start()
-	{
-		ChooseNextPoint();
-	}
 
 	void Update()
 	{
@@ -30,7 +24,7 @@ public class CatPatrol : MonoBehaviour
 
 	void Patrol()
 	{
-		Transform target = patrolPoints[nextIndex];
+		Transform target = patrolPoints[currentIndex];
 
 		Vector3 direction = target.position - transform.position;
 		direction.y = 0f;
@@ -48,13 +42,13 @@ public class CatPatrol : MonoBehaviour
 			waitTimer -= Time.deltaTime;
 			if (waitTimer <= 0f)
 			{
-				currentIndex = nextIndex;
-				ChooseNextPoint();
+				currentIndex = (currentIndex + 1) % patrolPoints.Length;
 				isWaiting = false;
 			}
 			return;
 		}
 
+		// Rotate toward target
 		Quaternion targetRot = Quaternion.LookRotation(direction);
 		transform.rotation = Quaternion.Slerp(
 			transform.rotation,
@@ -62,25 +56,8 @@ public class CatPatrol : MonoBehaviour
 			Time.deltaTime * rotationSpeed
 		);
 
+		// Move forward (CORRECT movement)
 		transform.position += transform.forward * moveSpeed * Time.deltaTime;
-	}
-
-	void ChooseNextPoint()
-	{
-		if (patrolPoints.Length == 1)
-		{
-			nextIndex = 0;
-			return;
-		}
-
-		int newIndex;
-		do
-		{
-			newIndex = Random.Range(0, patrolPoints.Length);
-		}
-		while (newIndex == currentIndex);
-
-		nextIndex = newIndex;
 	}
 
 	// ===== External Control =====

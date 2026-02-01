@@ -8,6 +8,31 @@ public class PlayerMask : MonoBehaviour
 	public GameObject unmaskedModel;
 	public GameObject maskedModel;
 
+	[Header("Mask Heat Settings")]
+	public float maxHeat = 5f;
+	public float heatIncreaseRate = 1f;
+	public float heatDecreaseRate = 1.5f;
+	public float overheatCooldown = 2f;
+
+	public float CurrentHeat { get; private set; }
+
+	private bool isOverheated;
+	private float cooldownTimer;
+
+	private void Update()
+	{
+		if (IsMasked)
+		{
+			IncreaseHeat();
+		}
+		else
+		{
+			CoolDown();
+		}
+
+		HandleOverheatCooldown();
+	}
+
 	public void ToggleMask()
 	{
 		SetMask(!IsMasked);
@@ -22,4 +47,53 @@ public class PlayerMask : MonoBehaviour
 		unmaskedModel.SetActive(!IsMasked);
 		maskedModel.SetActive(IsMasked);
 	}
+
+	void IncreaseHeat()
+	{
+		if (isOverheated)
+			return;
+
+		CurrentHeat += heatIncreaseRate * Time.deltaTime;
+
+		if (CurrentHeat >= maxHeat)
+		{
+			Overheat();
+		}
+	}
+
+	void CoolDown()
+	{
+		CurrentHeat = Mathf.Max(0f, CurrentHeat - heatDecreaseRate * Time.deltaTime);
+	}
+
+	void Overheat()
+	{
+		Debug.Log("MASK OVERHEATED!");
+
+		isOverheated = true;
+		cooldownTimer = overheatCooldown;
+
+		if (IsMasked)
+			SetMask(false);
+	}
+
+	void HandleOverheatCooldown()
+	{
+		if (!isOverheated)
+			return;
+
+		cooldownTimer -= Time.deltaTime;
+
+		if (cooldownTimer <= 0f)
+		{
+			isOverheated = false;
+			Debug.Log("Mask cooled down, usable again");
+		}
+	}
+
+	public float GetHeatNormalized()
+	{
+		return Mathf.Clamp01(CurrentHeat / maxHeat);
+	}
+
 }
