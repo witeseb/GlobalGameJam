@@ -329,7 +329,6 @@ GameObject:
   - component: {fileID: 6354156496502142809}
   - component: {fileID: 44611348429458295}
   - component: {fileID: 6047816361531422507}
-  - component: {fileID: 6116871403844160186}
   - component: {fileID: 4101451869192481255}
   - component: {fileID: 172552130716135188}
   - component: {fileID: 8363717758988269559}
@@ -372,7 +371,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   walkSpeed: 6
   sprintSpeed: 8
-  mouseSensitivity: 2
+  mouseSensitivity: 20
   jumpForce: 10
   gravity: -40
   maxStamina: 100
@@ -402,29 +401,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMask
   unmaskedModel: {fileID: 5893248707530601312}
   maskedModel: {fileID: 6731195023618701087}
---- !u!136 &6116871403844160186
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6617423677955213050}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Height: 1
-  m_Direction: 1
-  m_Center: {x: 0, y: 0.5, z: 0}
 --- !u!143 &4101451869192481255
 CharacterController:
   m_ObjectHideFlags: 0
@@ -478,6 +454,7 @@ MonoBehaviour:
   interactableLayer:
     serializedVersion: 2
     m_Bits: 256
+  showDebug: 1
 --- !u!1 &6731195023618701087
 GameObject:
   m_ObjectHideFlags: 0
