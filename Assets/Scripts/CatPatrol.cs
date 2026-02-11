@@ -15,7 +15,11 @@ public class CatPatrol : MonoBehaviour
 
 	public bool IsPatrolling { get; private set; } = true;
 
-	void Start()
+    [Header("Obstacle Detection")]
+    public float obstacleCheckDistance = 1.5f;
+    public LayerMask obstacleMask;
+
+    void Start()
 	{
 		ChooseNextPoint();
 	}
@@ -62,8 +66,29 @@ public class CatPatrol : MonoBehaviour
 			Time.deltaTime * rotationSpeed
 		);
 
-		transform.position += transform.forward * moveSpeed * Time.deltaTime;
-	}
+        if (!IsObstacleAhead())
+        {
+            transform.position += transform.forward * moveSpeed * Time.deltaTime;
+        }
+        else
+        {
+            // Obstacle detected - choose a new patrol point
+            currentIndex = nextIndex;
+            ChooseNextPoint();
+            isWaiting = false;
+        }
+        bool IsObstacleAhead()
+        {
+            Vector3 rayOrigin = transform.position + Vector3.up * 0.5f;
+
+            return Physics.Raycast(
+                rayOrigin,
+                transform.forward,
+                obstacleCheckDistance,
+                obstacleMask
+            );
+        }
+    }
 
 	void ChooseNextPoint()
 	{

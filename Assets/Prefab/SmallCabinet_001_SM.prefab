@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 8930666544523164924}
   - component: {fileID: 6635190583119071286}
   - component: {fileID: -5818251617845854195}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: SmallCabinet_001_SM
   m_TagString: Untagged
   m_Icon: {fileID: 0}
