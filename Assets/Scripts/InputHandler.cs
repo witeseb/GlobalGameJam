@@ -12,13 +12,6 @@ public class InputHandler : MonoBehaviour
 	public InputAction _jumpAction;
 	public InputAction _maskAction;
 
-	[Header("Mask Hold Settings")]
-	public float maskHoldTime = 0.75f;
-
-	private bool isHoldingMask;
-	private float maskHoldTimer;
-	private bool maskToggledThisHold;
-
 private void Awake()
 	{
 		playerController = FindFirstObjectByType<PlayerController>();
@@ -91,7 +84,6 @@ private void Awake()
 
 		HandleMovement();
 		HandleLook();
-		HandleMaskHold();
 	}
 
 	private void HandleMovement()
@@ -118,30 +110,12 @@ private void Awake()
 	}
 	private void OnMaskStarted(InputAction.CallbackContext ctx)
 	{
-		isHoldingMask = true;
-		maskHoldTimer = 0f;
-		maskToggledThisHold = false;
-	}
+        playerMask.SetMaskActive(true);
+    }
 
 	private void OnMaskCanceled(InputAction.CallbackContext ctx)
 	{
-		isHoldingMask = false;
-		maskHoldTimer = 0f;
-		maskToggledThisHold = false;
-	}
-
-	private void HandleMaskHold()
-	{
-		if (!isHoldingMask || maskToggledThisHold || playerMask == null)
-			return;
-
-		maskHoldTimer += Time.deltaTime;
-
-		if (maskHoldTimer >= maskHoldTime)
-		{
-			playerMask.ToggleMask();
-			maskToggledThisHold = true;
-		}
-	}
+        playerMask.SetMaskActive(false);
+    }
 
 }

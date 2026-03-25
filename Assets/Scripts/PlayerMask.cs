@@ -10,7 +10,7 @@ public class PlayerMask : MonoBehaviour
 
 	public void ToggleMask()
 	{
-		SetMask(!IsMasked);
+        SetMaskActive(!IsMasked); ;
 	}
 
 	private void SetMask(bool value)
@@ -22,4 +22,14 @@ public class PlayerMask : MonoBehaviour
 		unmaskedModel.SetActive(!IsMasked);
 		maskedModel.SetActive(IsMasked);
 	}
+    public void RemoveMask()
+    {
+        SetMaskActive(false);
+    }
+
+    public void SetMaskActive(bool value)
+    {
+        if (IsMasked == value) return;
+        SetMask(value);
+    }
 }

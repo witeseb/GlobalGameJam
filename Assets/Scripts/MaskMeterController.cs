@@ -49,6 +49,11 @@ public class MaskMeterController : MonoBehaviour
         }
 
         currentMaskDurability = Mathf.Clamp(currentMaskDurability, 0f, maxMaskDurability);
+
+        if (currentMaskDurability <= 0f)
+        {
+            playerMask.RemoveMask();
+        }
     }
 
     private void UpdateMaskBar()
