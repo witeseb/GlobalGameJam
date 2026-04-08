@@ -7,7 +7,7 @@ public class MainMenuManager : MonoBehaviour
 {
     [SerializeField] private Button startButton;
 
-    private const string GameSceneName = "Level";
+    private const string GameSceneName = "Cutscene";
 
     private void Awake()
     {
