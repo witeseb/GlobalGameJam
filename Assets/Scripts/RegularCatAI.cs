@@ -138,6 +138,7 @@ public class RegularCatAI : MonoBehaviour
         state = RegularCatState.Chasing;
 
         patrol?.StopPatrol();
+        patrol?.SetWalking(true);
 
         if (questionMarkIcon != null)
             questionMarkIcon.SetActive(false);

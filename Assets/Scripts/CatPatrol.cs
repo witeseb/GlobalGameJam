@@ -11,8 +11,14 @@ public class CatPatrol : MonoBehaviour
     private int currentIndex;
     private float waitTimer;
     private bool isWaiting;
+    private static readonly int IsWalkingHash = Animator.StringToHash("IsWalking");
+    private Animator animator;
 
     public bool IsPatrolling { get; private set; } = true;
+    void Awake()
+    {
+        animator = GetComponentInChildren<Animator>();
+    }
 
     void Update()
     {
@@ -20,6 +26,12 @@ public class CatPatrol : MonoBehaviour
             return;
 
         Patrol();
+    }
+
+    public void SetWalking(bool walking)
+    {
+        if (animator != null)
+            animator.SetBool(IsWalkingHash, walking);
     }
 
     void Patrol()
@@ -37,6 +49,7 @@ public class CatPatrol : MonoBehaviour
             {
                 isWaiting = true;
                 waitTimer = waitAtPointTime;
+                SetWalking(false);
             }
 
             waitTimer -= Time.deltaTime;
@@ -58,16 +71,19 @@ public class CatPatrol : MonoBehaviour
 
         // Move forward (CORRECT movement)
         transform.position += transform.forward * moveSpeed * Time.deltaTime;
+        SetWalking(true);
     }
 
     // ===== External Control =====
     public void StopPatrol()
     {
         IsPatrolling = false;
+        SetWalking(false);
     }
 
     public void ResumePatrol()
     {
         IsPatrolling = true;
+        isWaiting = false;
     }
 }
