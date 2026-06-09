@@ -24860,6 +24860,10 @@ PrefabInstance:
       propertyPath: m_BackGroundColor.r
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2189433569777453035, guid: 38dfd204796c99f4d97b37183f54a673, type: 3}
+      propertyPath: m_AllowDynamicResolution
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3456390211950136978, guid: 38dfd204796c99f4d97b37183f54a673, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
