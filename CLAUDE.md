@@ -10,6 +10,34 @@ Global Game Jam Unity project: a first-person stealth game. You play a mouse who
 - All gameplay code is in `Assets/Scripts/` and compiles into the default `Assembly-CSharp` assembly. There are no asmdefs, namespaces, or tests.
 - Generated files (`*.csproj`, `GlobalGameJam.sln`, `Library/`, `Temp/`, `obj/`) come from Unity. Don't edit them.
 
+## Game design (intended)
+
+This is the design the game is meant to have. Much of it isn't built yet (see "Design vs. current code" below). When code and this section disagree, build toward this section.
+
+**Phase 1: Heist.** The player starts at a random spawn point. Regular cats patrol the level. The player sneaks around, can collect optional small cheeses, and must find the Big Cheese.
+
+**Phase 2: Escape.** Picking up the Big Cheese starts this phase:
+- All regular cats disappear from the map.
+- The **boss cat** spawns. It's meant to raise the difficulty and the tension for the run to the exit.
+- The player must bring the Big Cheese to the extraction point to win.
+
+**Regular cats**
+- They use the mask and detection rules described under Architecture → Cats.
+- The player has **3 lives** against regular cats. When a cat reaches the player, it plays a catch animation and the player loses one life. Losing all 3 lives means game over.
+
+**Boss cat**
+- **Spawn:** it spawns near the player, not too close and not too far: inside a minimum-to-maximum distance band from the player. The aim is that every escape phase opens with the player running from the boss and trying to break its line of sight.
+- **Awareness:** it's bigger than a regular cat, so its vision cone is wider and longer.
+- **Mask rules:** the same as the current `BossCatAI` logic. Being seen unmasked is an instant chase. Putting the mask on while in its view is an instant chase. Staying masked in view builds suspicion until the boss chases.
+- **Losing the player:** when the boss loses sight of the player, it goes into a patrol state. If it patrols for a while without spotting the player again, it walks straight to the area the player is in **now**, using the player's current position, not the last place it saw them. This stops the player from hiding in one spot for too long.
+- **Catch:** if the boss reaches the player, the game is lost instantly. There are no lives against the boss.
+
+**Design vs. current code** (as of 2026-11-12)
+- The boss exists in the scene from the start and paces a fixed hallway (`BossHallwayPatrol`). It should instead spawn when the player picks up the Big Cheese.
+- `BigCheese.Interact` only adds the cheese to the inventory. It doesn't remove the regular cats or spawn the boss. `PlayerInventory.OnInventoryChanged` (with `hasBigCheese == true`) is a natural hook for the phase switch.
+- `BossCatAI.TriggerChase` only logs a message. The boss has no chase movement, patrol-then-hunt behavior, or catch.
+- `RegularCatAI` treats a chase as permanent and has no catch. It needs a catch with an animation, a life counter, and a game over at 0 lives.
+
 ## Working with the project
 
 - There is no CLI build or test workflow. Code compiles when the Unity Editor regains focus or refreshes.
@@ -72,5 +100,6 @@ Renaming a scene breaks these string references.
   - Game over (`RegularCatAI.HandleChase`, `BossCatAI.TriggerChase`)
   - Win screen (`ExtractionPoint`)
   - The boss's chase behavior
+  - The phase switch, the boss spawn, and the player's lives (see "Game design (intended)")
 - `CameraController.cs` is an empty stub.
 - Mixed indentation: most files use tabs, and some (`CatPatrol`, `RegularCatAI`, the UI scripts) use 4 spaces. Match the file you're editing.
