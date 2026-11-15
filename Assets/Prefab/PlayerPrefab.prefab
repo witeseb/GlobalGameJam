@@ -65,7 +65,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
+  near clip plane: 0.05
   far clip plane: 1000
   field of view: 60
   orthographic: 0
@@ -228,7 +228,6 @@ MonoBehaviour:
     m_Interactions: 
     m_SingletonActionBindings: []
     m_Flags: 0
-  maskHoldTime: 0.75
 --- !u!1 &5893248707530601312
 GameObject:
   m_ObjectHideFlags: 0
@@ -375,19 +374,36 @@ MonoBehaviour:
   mouseSensitivity: 20
   jumpForce: 10
   gravity: -40
+  acceleration: 25
+  deceleration: 15
+  airControl: 0.4
+  dashSpeedMultiplier: 1.5
+  dashDuration: 0.18
+  dashCooldown: 0.6
   maxStamina: 100
   staminaDrainRate: 25
   staminaRegenRate: 20
   staminaRegenDelay: 0.5
+  freezeDelay: 0.5
+  freezeSpeedThreshold: 0.1
+  frozenFOVOffset: -4
+  bigCheeseSpeedMultiplier: 0.75
+  bigCheeseJumpMultiplier: 0.7
+  bigCheeseStaminaDrainMultiplier: 1.5
+  maskedSpeedMultiplier: 0.85
   playerCamera: {fileID: 2189433569777453035}
   normalFOV: 60
   sprintFOV: 70
   fovSpeed: 8
-  walkBobSpeed: 10
-  walkBobAmount: 0.05
-  sprintBobSpeed: 16
-  sprintBobAmount: 0.09
+  walkBobSpeed: 11
+  walkBobAmount: 0.03
+  sprintBobSpeed: 15
+  sprintBobAmount: 0.045
+  bobRollAmount: 0.5
   bobSmoothness: 8
+  landingDipAmount: 0.1
+  landingDipMaxFallSpeed: 8
+  landingRecoverSpeed: 10
 --- !u!114 &6047816361531422507
 MonoBehaviour:
   m_ObjectHideFlags: 0

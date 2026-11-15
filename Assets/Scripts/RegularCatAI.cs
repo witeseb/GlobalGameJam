@@ -12,6 +12,8 @@ public class RegularCatAI : MonoBehaviour
     [Header("Detection")]
     public VisionSensor vision;
     public float unmaskedDetectionDelay = 2f;
+    [Tooltip("Detection speed multiplier while the player is frozen (standing still).")]
+    public float frozenDetectionMultiplier = 0.35f;
 
     [Header("Strike System")]
     public int maxStrikes = 3;
@@ -29,6 +31,7 @@ public class RegularCatAI : MonoBehaviour
     public GameObject chaseIcon;
 
     private Transform player;
+    private PlayerController playerController;
     private PlayerMask playerMask;
     private CatPatrol patrol;
 
@@ -42,6 +45,7 @@ public class RegularCatAI : MonoBehaviour
     {
         var playerObj = FindFirstObjectByType<PlayerController>();
         player = playerObj.transform;
+        playerController = playerObj;
         playerMask = playerObj.GetComponent<PlayerMask>();
         patrol = GetComponent<CatPatrol>();
 
@@ -91,7 +95,8 @@ public class RegularCatAI : MonoBehaviour
 
         if (!playerMask.IsMasked)
         {
-            detectionTimer += Time.deltaTime;
+            float rate = playerController.IsFrozen ? frozenDetectionMultiplier : 1f;
+            detectionTimer += Time.deltaTime * rate;
             if (detectionTimer >= unmaskedDetectionDelay)
                 TriggerChase();
         }

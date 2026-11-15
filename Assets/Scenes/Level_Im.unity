@@ -17213,19 +17213,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 44611348429458295, guid: 38dfd204796c99f4d97b37183f54a673, type: 3}
       propertyPath: walkBobSpeed
-      value: 1
+      value: 11
       objectReference: {fileID: 0}
     - target: {fileID: 44611348429458295, guid: 38dfd204796c99f4d97b37183f54a673, type: 3}
       propertyPath: walkBobAmount
-      value: 0.3
+      value: 0.03
       objectReference: {fileID: 0}
     - target: {fileID: 44611348429458295, guid: 38dfd204796c99f4d97b37183f54a673, type: 3}
       propertyPath: sprintBobSpeed
-      value: 2
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 44611348429458295, guid: 38dfd204796c99f4d97b37183f54a673, type: 3}
       propertyPath: sprintBobAmount
-      value: 0.8
+      value: 0.045
       objectReference: {fileID: 0}
     - target: {fileID: 563905208577437814, guid: 38dfd204796c99f4d97b37183f54a673, type: 3}
       propertyPath: m_LocalScale.x

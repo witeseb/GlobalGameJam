@@ -77,9 +77,9 @@ public class LevelGenerator : MonoBehaviour
 	[Header("Lights")]
 	[SerializeField] private GameObject ceilingLightPrefab;
 	[Tooltip("Roughly one room light per this many cells along each axis.")]
-	[SerializeField, Min(1)] private int lightSpacing = 3;
+	[SerializeField, Min(1)] private int lightSpacing = 4;
 	[Tooltip("Minimum distance (cells) between hallway lights.")]
-	[SerializeField, Min(1)] private int hallwayLightSpacing = 4;
+	[SerializeField, Min(1)] private int hallwayLightSpacing = 6;
 
 	[Header("Spawn Point Containers (filled on generate)")]
 	[SerializeField] private Transform playerSpawnContainer;

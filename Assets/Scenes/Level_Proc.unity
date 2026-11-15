@@ -234,7 +234,7 @@ MonoBehaviour:
   roomSpacing: 2
   maxPlacementAttempts: 500
   extraConnectionChance: 0.25
-  turnCost: 2
+  turnCost: 5
   hallwayReuseCost: 0.5
   roomAdjacentPenalty: 1.5
   parallelHallwayPenalty: 1
@@ -250,8 +250,8 @@ MonoBehaviour:
   hallCross: {fileID: 3720460667190498240, guid: e16e403634b8f5c48bed6c320fe74e86, type: 3}
   hallDeadEnd: {fileID: 2723884773267583010, guid: a83e864d7dcbe944abbf817d6d172620, type: 3}
   ceilingLightPrefab: {fileID: 334063477139332346, guid: 6a076e0bcbc6d844382506f4a1a75217, type: 3}
-  lightSpacing: 3
-  hallwayLightSpacing: 4
+  lightSpacing: 4
+  hallwayLightSpacing: 6
   playerSpawnContainer: {fileID: 763197801}
   exitPointContainer: {fileID: 1785148246}
   bigCheeseContainer: {fileID: 421457963}
@@ -1334,19 +1334,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 44611348429458295, guid: 38dfd204796c99f4d97b37183f54a673, type: 3}
       propertyPath: walkBobSpeed
-      value: 1
+      value: 11
       objectReference: {fileID: 0}
     - target: {fileID: 44611348429458295, guid: 38dfd204796c99f4d97b37183f54a673, type: 3}
       propertyPath: walkBobAmount
-      value: 0.3
+      value: 0.03
       objectReference: {fileID: 0}
     - target: {fileID: 44611348429458295, guid: 38dfd204796c99f4d97b37183f54a673, type: 3}
       propertyPath: sprintBobSpeed
-      value: 2
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 44611348429458295, guid: 38dfd204796c99f4d97b37183f54a673, type: 3}
       propertyPath: sprintBobAmount
-      value: 0.8
+      value: 0.045
       objectReference: {fileID: 0}
     - target: {fileID: 563905208577437814, guid: 38dfd204796c99f4d97b37183f54a673, type: 3}
       propertyPath: m_LocalScale.x
