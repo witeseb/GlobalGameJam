@@ -767,6 +767,8 @@ GameObject:
   - component: {fileID: 5926196048047086535}
   - component: {fileID: 2492926344509322085}
   - component: {fileID: 2316724779328011766}
+  - component: {fileID: 3256505684427102666}
+  - component: {fileID: 3745768266457737480}
   m_Layer: 0
   m_Name: Cat
   m_TagString: Untagged
@@ -807,11 +809,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RegularCatAI
   vision: {fileID: 2492926344509322085}
   unmaskedDetectionDelay: 1
+  frozenDetectionMultiplier: 0.35
+  searchDetectionMultiplier: 2
   maxStrikes: 3
   currentStrikes: 0
   confusedDuration: 2
   chaseSpeed: 4
-  chaseTurnSpeed: 8
+  repathInterval: 0.2
+  trackAfterLostSight: 0.5
+  loseSightTime: 2
+  unreachableGiveUpTime: 2
+  catchRange: 0.9
+  catchDuration: 1.2
+  lungeSpeed: 4
+  lungeTime: 0.2
+  searchSpeed: 2.5
+  searchPointCount: 2
+  searchRadius: 4
+  lookAroundTime: 1.5
+  lookAroundAngle: 70
+  maxSearchTime: 12
+  turnSpeed: 6
   questionMarkIcon: {fileID: 996805213559417224}
   chaseIcon: {fileID: 1097944989891838636}
 --- !u!114 &2492926344509322085
@@ -833,7 +851,7 @@ MonoBehaviour:
     m_Bits: 64
   obstacleMask:
     serializedVersion: 2
-    m_Bits: 128
+    m_Bits: 129
   drawGizmos: 1
 --- !u!114 &2316724779328011766
 MonoBehaviour:
@@ -847,10 +865,61 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 787a166dc27ccf7478ec718e3adb4b28, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CatPatrol
+  mode: 0
   patrolPoints: []
   moveSpeed: 2
   waitAtPointTime: 1.5
-  rotationSpeed: 6
+  territoryRadius: 30
+  minTerritoryPoints: 4
+  choiceCount: 3
+  junctionWaitTime: 0.2
+  lookAroundAngle: 60
+  lookTurnSpeed: 5
+  pointSnapRadius: 2
+  arriveDistance: 0.2
+  walkAnimThreshold: 0.1
+--- !u!195 &3256505684427102666
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4275621530950203659}
+  m_Enabled: 1
+  m_AgentTypeID: 106244894
+  m_Radius: 0.3
+  m_Speed: 2
+  m_Acceleration: 16
+  avoidancePriority: 50
+  m_AngularSpeed: 540
+  m_StoppingDistance: 0.1
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 0.9
+  m_BaseOffset: 0.11
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 2
+--- !u!114 &3745768266457737480
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4275621530950203659}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e3fdca004f2d45fe8abbed571a8abd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshModifier
+  m_SerializedVersion: 0
+  m_OverrideArea: 0
+  m_Area: 0
+  m_OverrideGenerateLinks: 0
+  m_GenerateLinks: 0
+  m_IgnoreFromBuild: 1
+  m_ApplyToChildren: 1
+  m_AffectedAgents: ffffffff
 --- !u!1 &4500242260394044764
 GameObject:
   m_ObjectHideFlags: 0
@@ -1116,7 +1185,7 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5620019216510699287}
   m_Enabled: 1
-  serializedVersion: 12
+  serializedVersion: 13
   m_Type: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Intensity: 5
@@ -1168,7 +1237,7 @@ Light:
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ForceVisible: 0
-  m_ShadowRadius: 0
+  m_ShapeRadius: 0
   m_ShadowAngle: 0
   m_LightUnit: 1
   m_LuxAtDistance: 1

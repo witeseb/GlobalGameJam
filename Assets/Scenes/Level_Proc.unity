@@ -204,6 +204,8 @@ GameObject:
   m_Component:
   - component: {fileID: 35777348}
   - component: {fileID: 35777347}
+  - component: {fileID: 35777349}
+  - component: {fileID: 35777350}
   m_Layer: 0
   m_Name: LevelGenerator
   m_TagString: Untagged
@@ -260,6 +262,15 @@ MonoBehaviour:
   playerSpawnHeight: 1
   exitHeight: 0.6
   cheeseHeight: 0
+  furnisher: {fileID: 35777350}
+  navMeshSurface: {fileID: 35777349}
+  patrolNetwork: {fileID: 823655994}
+  catSpawnContainer: {fileID: 563379606}
+  roomsPerCat: 3
+  minCats: 1
+  maxCats: 5
+  minCatSpawnDistance: 8
+  extraRoomWaypoints: 2
 --- !u!4 &35777348
 Transform:
   m_ObjectHideFlags: 0
@@ -275,6 +286,182 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &35777349
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 35777346}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a5ac11cc976e418e8d13136b07e1f52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshSurface
+  m_SerializedVersion: 0
+  m_AgentTypeID: 106244894
+  m_CollectObjects: 2
+  m_Size: {x: 10, y: 10, z: 10}
+  m_Center: {x: 0, y: 2, z: 0}
+  m_LayerMask:
+    serializedVersion: 2
+    m_Bits: 129
+  m_UseGeometry: 1
+  m_DefaultArea: 0
+  m_GenerateLinks: 0
+  m_IgnoreNavMeshAgent: 1
+  m_IgnoreNavMeshObstacle: 1
+  m_OverrideTileSize: 0
+  m_TileSize: 256
+  m_OverrideVoxelSize: 0
+  m_VoxelSize: 0.1
+  m_MinRegionArea: 2
+  m_NavMeshData: {fileID: 0}
+  m_BuildHeightMesh: 0
+--- !u!114 &35777350
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 35777346}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0fa77b242993269499786755fbd5005e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoomFurnisher
+  wallItems:
+  - prefab: {fileID: 5121739421145360867, guid: c6e223cd1fb22c54d824eb5ff03d536c, type: 3}
+    weight: 1.6
+    cornerChance: 0.5
+  - prefab: {fileID: 2697452973476159950, guid: 30ad7eead5298fe4d911ec2f044c9337, type: 3}
+    weight: 1.1
+    cornerChance: 0.7
+  - prefab: {fileID: 5658004853992811664, guid: 9c231895e9385fa47b9ae34c59f82240, type: 3}
+    weight: 0.7
+    cornerChance: 0.6
+  wallItemsPerPerimeterCell: 0.35
+  cornerCounter: {fileID: 4260055933118519422, guid: 0bdbbd9684ca8054daf1a76629672297, type: 3}
+  cornerCounterChance: 0.5
+  tablePrefab: {fileID: 6029910224117318858, guid: d69947c65d587e44c8aab56f40eb2dc3, type: 3}
+  chairPrefab: {fileID: 4680694716253419447, guid: b70a0355ce13fa3408dc07e92a98a5db, type: 3}
+  chairSideOffset: 1.62
+  chairSpacing: 1.75
+  chairsPerSide: 3
+  headChairOffset: 3.22
+  headChairChance: 0.3
+  minCellsForTable: 3
+  islandPrefab: {fileID: 2751086461307382327, guid: 9b355bca844638c4ebbb5a0eed30f6bd, type: 3}
+  minCellsForIsland: 4
+  islandChance: 0.4
+  ingredients:
+  - prefab: {fileID: 6312820908251551705, guid: ea13dacd64909c04496659ff0fa66abb, type: 3}
+    onTableWeight: 4
+    underIslandWeight: 2
+    maxStack: 3
+    stackStep: 1.05
+    maxCluster: 1
+    isCrate: 0
+  - prefab: {fileID: 8530749097111283332, guid: 476e927b85e7e154d9e8fdb641ba7ff9, type: 3}
+    onTableWeight: 4
+    underIslandWeight: 2
+    maxStack: 1
+    stackStep: 1
+    maxCluster: 1
+    isCrate: 0
+  - prefab: {fileID: 4506344623288827839, guid: e152660ef0e22884e803786dca1a2eec, type: 3}
+    onTableWeight: 3
+    underIslandWeight: 1
+    maxStack: 1
+    stackStep: 1
+    maxCluster: 1
+    isCrate: 1
+  - prefab: {fileID: 5181586494084738423, guid: 3c44847b123ef714bb6e9387dc1feca1, type: 3}
+    onTableWeight: 5
+    underIslandWeight: 1
+    maxStack: 1
+    stackStep: 1
+    maxCluster: 1
+    isCrate: 0
+  - prefab: {fileID: 932574460419735561, guid: 1a12532980bb9044c9f5ed360ca5df18, type: 3}
+    onTableWeight: 7
+    underIslandWeight: 2
+    maxStack: 1
+    stackStep: 1
+    maxCluster: 1
+    isCrate: 0
+  - prefab: {fileID: 1857326889125797589, guid: 0bc587d823ef0fb42a134ec57bc30173, type: 3}
+    onTableWeight: 1
+    underIslandWeight: 0
+    maxStack: 1
+    stackStep: 1
+    maxCluster: 1
+    isCrate: 0
+  - prefab: {fileID: 8274965923317562117, guid: 8585d96d604a7604cbfaba970fdc0f74, type: 3}
+    onTableWeight: 4
+    underIslandWeight: 0
+    maxStack: 1
+    stackStep: 1
+    maxCluster: 1
+    isCrate: 0
+  - prefab: {fileID: 3172405430359849902, guid: 9637f635dc81fc34fb2860cc715554e3, type: 3}
+    onTableWeight: 6
+    underIslandWeight: 4
+    maxStack: 1
+    stackStep: 1
+    maxCluster: 1
+    isCrate: 0
+  - prefab: {fileID: 1025168390038366510, guid: 85785ba19336c5b4fa61814c3a93b637, type: 3}
+    onTableWeight: 5
+    underIslandWeight: 4
+    maxStack: 1
+    stackStep: 1
+    maxCluster: 1
+    isCrate: 1
+  - prefab: {fileID: 1206560091998709972, guid: f9944a8ad527f52438b89a1d0713e576, type: 3}
+    onTableWeight: 4
+    underIslandWeight: 4
+    maxStack: 4
+    stackStep: 0.55
+    maxCluster: 1
+    isCrate: 0
+  - prefab: {fileID: 1539522576252791139, guid: bab0139021530ca4a9607c4855165fc8, type: 3}
+    onTableWeight: 5
+    underIslandWeight: 1
+    maxStack: 1
+    stackStep: 1
+    maxCluster: 1
+    isCrate: 0
+  - prefab: {fileID: 4123661774461542333, guid: 028e55e0a96bff6488510d62ef417171, type: 3}
+    onTableWeight: 1
+    underIslandWeight: 0
+    maxStack: 1
+    stackStep: 1
+    maxCluster: 1
+    isCrate: 0
+  - prefab: {fileID: 8257074977719715658, guid: 4a04bac389bc9814aa4c3da50565c836, type: 3}
+    onTableWeight: 11
+    underIslandWeight: 0
+    maxStack: 1
+    stackStep: 1
+    maxCluster: 3
+    isCrate: 0
+  crateFillers:
+  - {fileID: 4123661774461542333, guid: 028e55e0a96bff6488510d62ef417171, type: 3}
+  - {fileID: 1857326889125797589, guid: 0bc587d823ef0fb42a134ec57bc30173, type: 3}
+  crateFillChance: 0.6
+  ingredientsOnTable: {x: 5, y: 10}
+  ingredientsOnCornerCounter: {x: 6, y: 12}
+  ingredientsOnIsland: {x: 0, y: 2}
+  ingredientsUnderIsland: {x: 10, y: 16}
+  tableEdgeMargin: 0.3
+  ingredientGap: 0.04
+  wallInset: 0.16
+  doorClearDepth: 1.5
+  spawnClearRadius: 1
+  walkClearance: 0.4
+  gridResolution: 0.25
+  freeSpotSpacing: 1
 --- !u!1 &120246781
 GameObject:
   m_ObjectHideFlags: 0
@@ -653,6 +840,68 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &505587476
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 505587477}
+  m_Layer: 0
+  m_Name: Cats
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &505587477
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 505587476}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1503989421}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &563379605
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 563379606}
+  m_Layer: 0
+  m_Name: CatSpawnPoints
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &563379606
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 563379605}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1503989421}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &607427278
 GameObject:
   m_ObjectHideFlags: 0
@@ -858,6 +1107,50 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1503989421}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &823655992
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 823655993}
+  - component: {fileID: 823655994}
+  m_Layer: 0
+  m_Name: PatrolNetwork
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &823655993
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 823655992}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1503989421}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &823655994
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 823655992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1c7ee2dbbc276044a28c8a0406be128, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PatrolNetwork
 --- !u!1 &1038782751
 GameObject:
   m_ObjectHideFlags: 0
@@ -1076,6 +1369,9 @@ Transform:
   - {fileID: 421457963}
   - {fileID: 763197801}
   - {fileID: 1785148246}
+  - {fileID: 823655993}
+  - {fileID: 563379606}
+  - {fileID: 505587477}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &1556217564 stripped
@@ -1563,6 +1859,7 @@ GameObject:
   - component: {fileID: 1857661641}
   - component: {fileID: 1857661643}
   - component: {fileID: 1857661644}
+  - component: {fileID: 1857661645}
   m_Layer: 0
   m_Name: Spawner
   m_TagString: Untagged
@@ -1630,6 +1927,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   spawnPointsContainer: {fileID: 763197801}
+--- !u!114 &1857661645
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1857661640}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f9b0786bd032174294d7f9e176ddb7d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CatSpawner
+  catSpawnContainer: {fileID: 563379606}
+  catPrefab: {fileID: 4275621530950203659, guid: 32912d0cbb894de47a5747be3d3f1baa, type: 3}
+  maxCats: 0
+  spawnParent: {fileID: 505587477}
 --- !u!1 &1906114321
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.AI.Navigation;
 using UnityEngine;
 
 // Grid-based level generator.
@@ -6,7 +7,8 @@ using UnityEngine;
 // 2. Connects rooms: minimum spanning tree + a few extra links for loops.
 // 3. Carves hallways with A* (prefers straight runs and reusing existing hallways).
 // 4. Builds rooms from tile prefabs and hallways from the Hall_* pieces.
-// 5. Fills the spawn point containers used by PlayerSpawnManager / CheeseSpawner / ExitSpawner.
+// 5. Picks the start / exit / big-cheese rooms, then furnishes every room (RoomFurnisher) around them.
+// 6. Fills the spawn point containers used by PlayerSpawnManager / CheeseSpawner / ExitSpawner.
 // Runs before those scripts' Awake so their containers are already populated.
 [DefaultExecutionOrder(-100)]
 public class LevelGenerator : MonoBehaviour
@@ -91,11 +93,35 @@ public class LevelGenerator : MonoBehaviour
 	[SerializeField] private float exitHeight = 0.6f;
 	[SerializeField] private float cheeseHeight = 0f;
 
+	[Header("Furniture")]
+	[Tooltip("Furnishes each room after it is built. Leave empty for bare rooms.")]
+	[SerializeField] private RoomFurnisher furnisher;
+
+	[Header("Navigation")]
+	[Tooltip("Rebuilt after every Generate() so cats can path through the new layout. Set it to collect Physics Colliders from this object's children.")]
+	[SerializeField] private NavMeshSurface navMeshSurface;
+
+	[Header("Cats")]
+	[Tooltip("Filled with PatrolWaypoints on generate: spots in each room + hallway junctions.")]
+	[SerializeField] private PatrolNetwork patrolNetwork;
+	[Tooltip("Filled with one point per cat; CatSpawner spawns the cats there.")]
+	[SerializeField] private Transform catSpawnContainer;
+	[Tooltip("Roughly one cat per this many rooms.")]
+	[SerializeField, Min(1)] private int roomsPerCat = 3;
+	[SerializeField, Min(0)] private int minCats = 1;
+	[SerializeField, Min(0)] private int maxCats = 5;
+	[Tooltip("Cats only spawn in rooms at least this many cells' walk from the start room (relaxed if no room qualifies).")]
+	[SerializeField, Min(0)] private int minCatSpawnDistance = 8;
+	[Tooltip("Waypoints per room on top of the one nearest its centre (small rooms get fewer).")]
+	[SerializeField, Min(0)] private int extraRoomWaypoints = 2;
+
 	private CellType[,] grid;
 	private int[,] roomIds;
 	private readonly List<Room> rooms = new List<Room>();
 	private readonly List<Vector2Int> connections = new List<Vector2Int>(); // pairs of room ids
 	private readonly HashSet<(Vector2Int, Vector2Int)> doorways = new HashSet<(Vector2Int, Vector2Int)>();
+	private readonly Dictionary<int, List<Vector3>> roomFreeSpots = new Dictionary<int, List<Vector3>>();
+	private int[,] distFromStart;
 	private Transform generatedRoot;
 	private System.Random rng;
 
@@ -140,8 +166,24 @@ public class LevelGenerator : MonoBehaviour
 		generatedRoot.SetParent(transform, false);
 
 		BuildGeometry();
+		ChooseKeyRooms();
+		FurnishRooms();
 		PlaceLights();
 		PlaceSpawnPoints();
+		PlacePatrolWaypoints();
+		PlaceCatSpawnPoints();
+
+		// Bake before static batching (the surface reads colliders, not the combined meshes).
+		if (navMeshSurface != null)
+		{
+			navMeshSurface.BuildNavMesh();
+			// Never save the generated NavMesh into the scene: embedded NavMeshData forces the
+			// whole scene file to binary. It is rebuilt on every Generate() anyway.
+			if (navMeshSurface.navMeshData != null)
+				navMeshSurface.navMeshData.hideFlags = HideFlags.DontSave;
+		}
+		else
+			Debug.LogWarning("[LevelGenerator] No NavMeshSurface assigned: cats will have no NavMesh to walk on.");
 
 		if (Application.isPlaying)
 			StaticBatchingUtility.Combine(generatedRoot.gameObject);
@@ -157,8 +199,16 @@ public class LevelGenerator : MonoBehaviour
 		rooms.Clear();
 		connections.Clear();
 		doorways.Clear();
+		roomFreeSpots.Clear();
+		distFromStart = null;
 		StartRoom = ExitRoom = CheeseRoom = null;
 		UnreachableRooms = 0;
+
+		if (navMeshSurface != null)
+		{
+			navMeshSurface.RemoveData();
+			navMeshSurface.navMeshData = null;
+		}
 
 		var existing = transform.Find("Generated");
 		if (existing != null)
@@ -169,6 +219,10 @@ public class LevelGenerator : MonoBehaviour
 		ClearChildren(exitPointContainer);
 		ClearChildren(bigCheeseContainer);
 		ClearChildren(smallCheeseContainer);
+		ClearChildren(catSpawnContainer);
+		// The network must live on its own object: clearing it deletes all its children.
+		if (patrolNetwork != null && patrolNetwork.transform != transform)
+			ClearChildren(patrolNetwork.transform);
 	}
 
 	// ================= ROOMS =================
@@ -676,14 +730,69 @@ public class LevelGenerator : MonoBehaviour
 		}
 	}
 
+	// ================= FURNITURE =================
+	// Runs after the key rooms are chosen so the furnisher keeps their spawn spots clear.
+	void FurnishRooms()
+	{
+		if (furnisher == null)
+			return;
+
+		var doorsByRoom = new Dictionary<int, List<RoomFurnisher.Door>>();
+		foreach (var (a, b) in doorways)
+		{
+			AddDoor(doorsByRoom, a, b);
+			AddDoor(doorsByRoom, b, a);
+		}
+
+		foreach (var room in rooms)
+		{
+			var parent = new GameObject("Furniture").transform;
+			parent.SetParent(generatedRoot.Find($"Room_{room.id}"), false);
+
+			var request = new RoomFurnisher.Request
+			{
+				floor = new Rect(transform.position.x + room.rect.x * cellSize, transform.position.z + room.rect.y * cellSize,
+					room.rect.width * cellSize, room.rect.height * cellSize),
+				floorY = transform.position.y,
+				doorWidth = cellSize,
+				parent = parent,
+				rng = rng,
+			};
+			if (doorsByRoom.TryGetValue(room.id, out var doors))
+				request.doors.AddRange(doors);
+			if (room == StartRoom || room == ExitRoom || room == CheeseRoom)
+			{
+				Vector3 c = RoomCenterWorld(room, 0f);
+				request.keepClear.Add(new Vector2(c.x, c.z));
+			}
+
+			roomFreeSpots[room.id] = furnisher.Furnish(request);
+		}
+	}
+
+	void AddDoor(Dictionary<int, List<RoomFurnisher.Door>> doorsByRoom, Vector2Int roomCell, Vector2Int hallCell)
+	{
+		if (grid[roomCell.x, roomCell.y] != CellType.Room || grid[hallCell.x, hallCell.y] != CellType.Hallway)
+			return;
+
+		int id = roomIds[roomCell.x, roomCell.y];
+		Vector2Int outward = hallCell - roomCell;
+		Vector3 edge = CellToWorld(roomCell) + new Vector3(outward.x, 0f, outward.y) * (cellSize * 0.5f);
+
+		if (!doorsByRoom.TryGetValue(id, out var list))
+			doorsByRoom[id] = list = new List<RoomFurnisher.Door>();
+		list.Add(new RoomFurnisher.Door { point = new Vector2(edge.x, edge.z), inward = new Vector2(-outward.x, -outward.y) });
+	}
+
 	// ================= SPAWN POINTS =================
-	void PlaceSpawnPoints()
+	void ChooseKeyRooms()
 	{
 		if (rooms.Count == 0)
 			return;
 
 		StartRoom = rooms[rng.Next(rooms.Count)];
 		var fromStart = WalkDistances(StartRoom.Center);
+		distFromStart = fromStart;
 
 		// Exit goes in the reachable room farthest (by walking distance) from the start.
 		ExitRoom = StartRoom;
@@ -707,30 +816,190 @@ public class LevelGenerator : MonoBehaviour
 			int d = Mathf.Min(fromStart[r.Center.x, r.Center.y], fromExit[r.Center.x, r.Center.y]);
 			if (d > best) { best = d; CheeseRoom = r; }
 		}
+	}
+
+	void PlaceSpawnPoints()
+	{
+		if (rooms.Count == 0)
+			return;
 
 		AddPoint(playerSpawnContainer, "PlayerSpawnPoint", RoomCenterWorld(StartRoom, playerSpawnHeight));
 		AddPoint(exitPointContainer, "ExitPoint", RoomCenterWorld(ExitRoom, exitHeight));
 		AddPoint(bigCheeseContainer, "BigCheesePoint", RoomCenterWorld(CheeseRoom, cheeseHeight));
 
-		// Small cheese: random distinct reachable cells in rooms other than the start room.
-		var cells = new List<Vector2Int>();
+		// Small cheese: random distinct reachable floor spots in rooms other than the start room.
+		// With furniture, only spots the furnisher reports as free and reachable are used.
+		var bigCheese = RoomCenterWorld(CheeseRoom, 0f);
+		var spots = new List<Vector3>();
 		foreach (var r in rooms)
 		{
-			if (r == StartRoom && rooms.Count > 1)
+			if ((r == StartRoom && rooms.Count > 1) || distFromStart[r.Center.x, r.Center.y] < 0)
 				continue;
-			foreach (var c in r.rect.allPositionsWithin)
-				if (fromStart[c.x, c.y] >= 0)
-					cells.Add(c);
-		}
-		cells.Remove(CheeseRoom.Center);
 
-		int count = Mathf.Min(smallCheesePoints, cells.Count);
+			if (roomFreeSpots.TryGetValue(r.id, out var free))
+			{
+				foreach (var p in free)
+					if (r != CheeseRoom || Vector2.Distance(new Vector2(p.x, p.z), new Vector2(bigCheese.x, bigCheese.z)) > 1f)
+						spots.Add(p);
+			}
+			else
+			{
+				foreach (var c in r.rect.allPositionsWithin)
+					if (c != CheeseRoom.Center)
+						spots.Add(CellToWorld(c));
+			}
+		}
+
+		int count = Mathf.Min(smallCheesePoints, spots.Count);
 		for (int i = 0; i < count; i++)
 		{
-			int index = rng.Next(cells.Count);
-			AddPoint(smallCheeseContainer, "SmallCheesePoint", CellToWorld(cells[index]) + Vector3.up * cheeseHeight);
-			cells.RemoveAt(index);
+			int index = rng.Next(spots.Count);
+			AddPoint(smallCheeseContainer, "SmallCheesePoint", spots[index] + Vector3.up * cheeseHeight);
+			spots.RemoveAt(index);
 		}
+	}
+
+	// ================= CATS =================
+	// Room waypoints spread over each room's free floor, plus one at every hallway junction (3+ exits).
+	void PlacePatrolWaypoints()
+	{
+		if (patrolNetwork == null || rooms.Count == 0)
+			return;
+		if (patrolNetwork.transform == transform)
+		{
+			Debug.LogError("[LevelGenerator] Put the PatrolNetwork on its own GameObject, not on the LevelGenerator.");
+			return;
+		}
+
+		foreach (var room in rooms)
+		{
+			if (distFromStart[room.Center.x, room.Center.y] < 0)
+				continue;
+
+			int count = Mathf.Clamp(room.Area / 4, 1, 1 + extraRoomWaypoints);
+			foreach (var p in SpreadPick(RoomSpots(room), RoomCenterWorld(room, 0f), count))
+				AddWaypoint(p, PatrolWaypoint.Kind.Room);
+		}
+
+		for (int x = 0; x < gridWidth; x++)
+		{
+			for (int y = 0; y < gridHeight; y++)
+			{
+				var cell = new Vector2Int(x, y);
+				if (grid[x, y] != CellType.Hallway || distFromStart[x, y] < 0)
+					continue;
+				if (CountBits(HallwayMask(cell)) >= 3)
+					AddWaypoint(CellToWorld(cell), PatrolWaypoint.Kind.Junction);
+			}
+		}
+
+		patrolNetwork.Refresh();
+	}
+
+	// About one cat per roomsPerCat rooms, in rooms far from the start, spread out from each other.
+	void PlaceCatSpawnPoints()
+	{
+		if (catSpawnContainer == null || rooms.Count == 0)
+			return;
+
+		var candidates = new List<Room>();
+		foreach (var r in rooms)
+			if (r != StartRoom && distFromStart[r.Center.x, r.Center.y] >= minCatSpawnDistance)
+				candidates.Add(r);
+
+		// Small layouts: fall back to any reachable room except the start room.
+		if (candidates.Count == 0)
+			foreach (var r in rooms)
+				if (r != StartRoom && distFromStart[r.Center.x, r.Center.y] >= 0)
+					candidates.Add(r);
+
+		int count = Mathf.Clamp(Mathf.RoundToInt(rooms.Count / (float)roomsPerCat), minCats, maxCats);
+		count = Mathf.Min(count, candidates.Count);
+
+		// Farthest-point picking: each cat goes in the candidate room farthest from the start and from the cats placed so far.
+		var taken = new List<Vector3> { RoomCenterWorld(StartRoom, 0f) };
+		for (int i = 0; i < count; i++)
+		{
+			Room best = null;
+			float bestDist = -1f;
+			foreach (var r in candidates)
+			{
+				Vector3 c = RoomCenterWorld(r, 0f);
+				float d = float.MaxValue;
+				foreach (var t in taken)
+					d = Mathf.Min(d, Vector3.Distance(c, t));
+				if (d > bestDist) { bestDist = d; best = r; }
+			}
+
+			candidates.Remove(best);
+			Vector3 center = RoomCenterWorld(best, 0f);
+			taken.Add(center);
+			AddPoint(catSpawnContainer, "CatSpawnPoint", SpreadPick(RoomSpots(best), center, 1)[0]);
+		}
+	}
+
+	// Free floor spots of a room (from the furnisher), or its cell centres when unfurnished.
+	List<Vector3> RoomSpots(Room room)
+	{
+		if (roomFreeSpots.TryGetValue(room.id, out var free) && free.Count > 0)
+			return free;
+
+		var spots = new List<Vector3>();
+		foreach (var c in room.rect.allPositionsWithin)
+			spots.Add(CellToWorld(c));
+		return spots;
+	}
+
+	// First the spot nearest the centre, then repeatedly the spot farthest from those already picked.
+	static List<Vector3> SpreadPick(List<Vector3> spots, Vector3 center, int count)
+	{
+		var picked = new List<Vector3>();
+		if (spots.Count == 0)
+		{
+			picked.Add(center);
+			return picked;
+		}
+
+		Vector3 first = spots[0];
+		foreach (var s in spots)
+			if (FlatDistance(s, center) < FlatDistance(first, center))
+				first = s;
+		picked.Add(first);
+
+		while (picked.Count < count && picked.Count < spots.Count)
+		{
+			Vector3 best = spots[0];
+			float bestDist = -1f;
+			foreach (var s in spots)
+			{
+				float d = float.MaxValue;
+				foreach (var p in picked)
+					d = Mathf.Min(d, FlatDistance(s, p));
+				if (d > bestDist) { bestDist = d; best = s; }
+			}
+			if (bestDist <= 0.01f)
+				break;
+			picked.Add(best);
+		}
+		return picked;
+	}
+
+	static float FlatDistance(Vector3 a, Vector3 b) => Vector2.Distance(new Vector2(a.x, a.z), new Vector2(b.x, b.z));
+
+	static int CountBits(int mask)
+	{
+		int n = 0;
+		for (; mask != 0; mask &= mask - 1)
+			n++;
+		return n;
+	}
+
+	void AddWaypoint(Vector3 position, PatrolWaypoint.Kind kind)
+	{
+		var go = new GameObject(kind == PatrolWaypoint.Kind.Room ? "Waypoint_Room" : "Waypoint_Junction");
+		go.transform.SetParent(patrolNetwork.transform, false);
+		go.transform.position = new Vector3(position.x, transform.position.y, position.z);
+		go.AddComponent<PatrolWaypoint>().kind = kind;
 	}
 
 	// BFS step distance over connected cells; -1 = unreachable.

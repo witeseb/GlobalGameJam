@@ -332,6 +332,7 @@ GameObject:
   - component: {fileID: 4101451869192481255}
   - component: {fileID: 172552130716135188}
   - component: {fileID: 8363717758988269559}
+  - component: {fileID: 7054645587995407087}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -401,6 +402,8 @@ MonoBehaviour:
   sprintBobAmount: 0.045
   bobRollAmount: 0.5
   bobSmoothness: 8
+  bobBlendSpeed: 6
+  bobSmoothTime: 0.06
   landingDipAmount: 0.1
   landingDipMaxFallSpeed: 8
   landingRecoverSpeed: 10
@@ -440,7 +443,7 @@ CharacterController:
   m_Radius: 0.5
   m_SlopeLimit: 45
   m_StepOffset: 0.3
-  m_SkinWidth: 0.08
+  m_SkinWidth: 0.025
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0.5, z: 0}
 --- !u!114 &172552130716135188
@@ -472,6 +475,23 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   showDebug: 1
+--- !u!114 &7054645587995407087
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6617423677955213050}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 603c5c5d9f681cf499cd45aea09ffda2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerLives
+  maxLives: 3
+  caughtFreezeTime: 1.2
+  invulnerableTime: 2
+  respawnAfterCatch: 1
+  reloadSceneDelay: 3
 --- !u!1 &6731195023618701087
 GameObject:
   m_ObjectHideFlags: 0

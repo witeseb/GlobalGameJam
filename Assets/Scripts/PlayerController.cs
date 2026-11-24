@@ -76,6 +76,7 @@ public class PlayerController : MonoBehaviour
 	public bool IsDashing => _dashTimer > 0f;
 	public bool IsFrozen { get; private set; }
 	public float CurrentStamina { get; private set; }
+	public bool ControlEnabled { get; private set; } = true;
 
 	private Vector3 _horizontalVelocity;
 	private float _verticalVelocity;
@@ -164,6 +165,12 @@ public class PlayerController : MonoBehaviour
 			return;
 		}
 
+		if (!ControlEnabled)
+		{
+			movementVector = Vector2.zero;
+			sprintInput = false;
+		}
+
 		bool grounded = characterController.isGrounded;
 		bool hasMoveInput = movementVector.sqrMagnitude > 0.1f;
 
@@ -235,6 +242,9 @@ public class PlayerController : MonoBehaviour
 			return;
 		}
 
+		if (!ControlEnabled)
+			lookVector = Vector2.zero;
+
 		float mouseX = lookVector.x * mouseSensitivity * Time.deltaTime;
 		float mouseY = lookVector.y * mouseSensitivity * Time.deltaTime;
 
@@ -245,8 +255,48 @@ public class PlayerController : MonoBehaviour
 		transform.Rotate(Vector3.up * mouseX);
 	}
 
+	// Used while the player is caught: input is ignored but gravity still applies.
+	public void SetControlEnabled(bool value)
+	{
+		ControlEnabled = value;
+		if (!value)
+		{
+			_horizontalVelocity = Vector3.zero;
+			_dashTimer = 0f;
+			IsSprinting = false;
+		}
+	}
+
+	// Moves the player instantly (CharacterController must be off while teleporting)
+	// and clears any movement carried over from before.
+	public void Teleport(Vector3 position, Quaternion rotation)
+	{
+		// May run before Start() (e.g. from PlayerSpawnManager.Start), so don't rely on the cached field.
+		CharacterController cc = characterController != null ? characterController : GetComponent<CharacterController>();
+
+		bool ccWasEnabled = cc != null && cc.enabled;
+		if (cc != null)
+			cc.enabled = false;
+
+		transform.SetPositionAndRotation(position, rotation);
+
+		if (cc != null)
+			cc.enabled = ccWasEnabled;
+
+		_horizontalVelocity = Vector3.zero;
+		_verticalVelocity = 0f;
+		_dashTimer = 0f;
+		_stillTimer = 0f;
+		_wasGrounded = true;
+		IsFrozen = false;
+		_xRotation = 0f;
+	}
+
 	public void Jump()
 	{
+		if (!ControlEnabled)
+			return;
+
 		if (characterController.isGrounded)
 		{
 			float jumpMultiplier = CarryingBigCheese ? bigCheeseJumpMultiplier : 1f;

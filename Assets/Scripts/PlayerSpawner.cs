@@ -13,7 +13,7 @@ public class PlayerSpawnManager : MonoBehaviour
 
 	void Start()
 	{
-		TeleportPlayer();
+		RespawnPlayer();
 	}
 
 	// ================= INIT =================
@@ -35,7 +35,8 @@ public class PlayerSpawnManager : MonoBehaviour
 	}
 
 	// ================= TELEPORT =================
-	void TeleportPlayer()
+	// Teleports the player to a random spawn point. Also used after a cat catches the player.
+	public void RespawnPlayer()
 	{
 		if (spawnPoints == null || spawnPoints.Length == 0)
 		{
@@ -50,15 +51,11 @@ public class PlayerSpawnManager : MonoBehaviour
 			return;
 		}
 
-		CharacterController cc = player.GetComponent<CharacterController>();
-
 		int index = Random.Range(0, spawnPoints.Length);
 		Transform spawn = spawnPoints[index];
 
-		// IMPORTANT: Disable CC before teleporting
-		cc.enabled = false;
-		player.transform.SetPositionAndRotation(spawn.position, spawn.rotation);
-		cc.enabled = true;
+		// Disables the CharacterController while teleporting and clears leftover velocity.
+		player.Teleport(spawn.position, spawn.rotation);
 
 		Debug.Log($"Player teleported to spawn point {index}");
 	}
